@@ -1,8 +1,44 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
-public class P5{
+public class P5 {
     public static void main(String[] args) {
-        
+        ArrayList<String> receivedData = new ArrayList<>();
+        try (ServerSocket server = new ServerSocket(8005)) {
+            System.out.println("Server is listening on port 8005...");
+
+            while (true) {
+                try {
+                    Socket client = server.accept();
+                    System.out.println("Client connected.");
+
+                    InputStream is = client.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    StringBuilder wordBuilder = new StringBuilder();
+
+                    int data;
+                    while ((data = reader.read()) != -1) {
+                        char ch = (char) data;
+                        if (ch == '\n' || ch == '\r') {
+                            break;
+                        }
+                        wordBuilder.append(ch);
+                    }
+
+                    if (wordBuilder.length() > 0) {
+                        String word = wordBuilder.toString();
+                        receivedData.add(word);
+                        System.out.println("Received: " + word);
+                    }
+
+                    client.close();
+                } catch (Exception e) {
+                    System.err.println("Error handling client: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Server error: " + e.getMessage());
+        }
     }
 }
