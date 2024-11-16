@@ -13,8 +13,7 @@ public class P3 {
                     Socket client = server.accept();
                     System.out.println("Client connected.");
 
-                    InputStream is = client.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));                 
                     StringBuilder wordBuilder = new StringBuilder();
 
                     int data;
