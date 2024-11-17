@@ -26,30 +26,44 @@ public class Main {
         // Sending the text randomly throughout the system
         while (!textList.isEmpty()) {
             int randomPort = portArr[random.nextInt(portArr.length)];
-            int randomIndex = random.nextInt(textList.size()); // Random index from the list
-            String word = textList.remove(randomIndex); // Remove and get the word
-
-            // Increment Lamport clock before sending
-            lamportClock++;
-            sendWord(word, randomPort, lamportClock);
+            if (isConnectionEstablished(randomPort)) {
+                
+                // Increment Lamport clock before sending
+                String word = textList.remove(0);
+                lamportClock++;
+                sendWord(word, randomPort, lamportClock);
+            }else{
+                System.out.println("Connection not established on port: " + randomPort);
+                }
+            }
+            
+                    input.close();
         }
-
-        input.close();
+            
+                private static void sendWord(String word, int port, int timestamp) {
+                    try (Socket client = new Socket("localhost", port)) {
+                        OutputStream os = client.getOutputStream();
+                        String message = "Word: " + word + ", Timestamp: " + timestamp;
+            
+                        os.write(message.getBytes());
+                        os.flush();
+            
+                        System.out.println("Sent: " + message + " to port " + port);
+            
+                        Thread.sleep(100); // Simulate some delay
+                    } catch (Exception e) {
+                        System.err.println("Error sending word '" + word + "' to port " + port + ": " + e.getMessage());
+                    }
+                }
+            
+            public static boolean isConnectionEstablished(int port) {
+    String host = "localhost";
+    try (Socket socket = new Socket(host, port)) {
+        // If the socket successfully connects, the connection is established
+        return true;
+    } catch (Exception e) {
+        // If an exception occurs, the connection couldn't be established
+        return false;
     }
-
-    private static void sendWord(String word, int port, int timestamp) {
-        try (Socket client = new Socket("localhost", port)) {
-            OutputStream os = client.getOutputStream();
-            String message = "Word: " + word + ", Timestamp: " + timestamp;
-
-            os.write(message.getBytes());
-            os.flush();
-
-            System.out.println("Sent: " + message + " to port " + port);
-
-            Thread.sleep(100); // Simulate some delay
-        } catch (Exception e) {
-            System.err.println("Error sending word '" + word + "' to port " + port + ": " + e.getMessage());
-        }
-    }
+}
 }
