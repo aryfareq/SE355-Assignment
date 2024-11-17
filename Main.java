@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+    // Lamport clock variable
+    private static int lamportClock = 0;
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         Random random = new Random();
@@ -24,26 +27,29 @@ public class Main {
         while (!textList.isEmpty()) {
             int randomPort = portArr[random.nextInt(portArr.length)];
             int randomIndex = random.nextInt(textList.size()); // Random index from the list
+            String word = textList.remove(randomIndex); // Remove and get the word
 
-            // Get the word and remove it from the list
-            String word = textList.remove(randomIndex);
+            // Increment Lamport clock before sending
+            lamportClock++;
+            sendWord(word, randomPort, lamportClock);
+        }
 
-            try (Socket client = new Socket("localhost", randomPort)) {
-                OutputStream os = client.getOutputStream();
-                byte[] wordBytes = word.getBytes();
-                os.write(wordBytes);
-                os.flush();
-                System.out.println("Sent: " + word + " to port " + randomPort);
-            } catch (Exception e) {
-                System.err.println("Error sending word '" + word + "' to port " + randomPort + ": " + e.getMessage());
-            }
+        input.close();
+    }
 
-            // Add a delay to avoid overwhelming the system
-            try {
-                Thread.sleep(100); // 100 milliseconds
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+    private static void sendWord(String word, int port, int timestamp) {
+        try (Socket client = new Socket("localhost", port)) {
+            OutputStream os = client.getOutputStream();
+            String message = "Word: " + word + ", Timestamp: " + timestamp;
+
+            os.write(message.getBytes());
+            os.flush();
+
+            System.out.println("Sent: " + message + " to port " + port);
+
+            Thread.sleep(100); // Simulate some delay
+        } catch (Exception e) {
+            System.err.println("Error sending word '" + word + "' to port " + port + ": " + e.getMessage());
         }
     }
 }
