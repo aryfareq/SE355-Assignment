@@ -30,3 +30,5 @@ Bonus Points:
 5- Thread Sleep on all processes
 6- Collect the strings and build them again
 7- Print the string
+
+*** ask id we can implement stacks in order to get the words into the correct order
