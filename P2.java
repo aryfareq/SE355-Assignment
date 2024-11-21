@@ -1,43 +1,55 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.concurrent.*;
 
 public class P2 {
+    private static int lamportClock = 0;
+    private static final int port = 8002;
+    private static final int MAIN_PORT = 9000;
+
     public static void main(String[] args) {
-        ArrayList<String> receivedData = new ArrayList<>();
-        try (ServerSocket server = new ServerSocket(8002)) {
-            System.out.println("Server is listening on port 8002...");
-
-            while (true) {
-                try {
-                    Socket client = server.accept();
-                    System.out.println("Client connected.");
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                    StringBuilder wordBuilder = new StringBuilder();
-
-                    int data;
-                    while ((data = reader.read()) != -1) {
-                        char ch = (char) data;
-                        if (ch == '\n' || ch == '\r') {
-                            break;
+        // Start a thread to listen for incoming words
+        new Thread(() -> {
+            try (ServerSocket server = new ServerSocket(port)) {
+                while (true) {
+                    try (Socket client = server.accept()) {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                        PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+                        String receivedMessage = reader.readLine();
+                        
+                        if (receivedMessage != null) {
+                            String[] parts = receivedMessage.split(", ");
+                            String word = parts[0].split(": ")[1];
+                            int timestamp = Integer.parseInt(parts[1].split(": ")[1]);
+                            
+                            lamportClock = Math.max(lamportClock, timestamp) + 1;
+                            
+                            System.out.println("P2 received: \"" + word + "\" with Lamport clock: " + lamportClock);
+                            
+                            // Resend to Main with updated timestamp
+                            try (Socket mainSocket = new Socket("localhost", MAIN_PORT)) {
+                                PrintWriter mainOut = new PrintWriter(mainSocket.getOutputStream(), true);
+                                String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
+                                mainOut.println(responseToMain);
+                                System.out.println("P2 resent to Main: " + responseToMain);
+                            } catch (IOException e) {
+                                System.err.println("Error resending to Main: " + e.getMessage());
+                            }
                         }
-                        wordBuilder.append(ch);
+                    } catch (IOException e) {
+                        System.err.println("Error in P2 receiving: " + e.getMessage());
                     }
-
-                    if (wordBuilder.length() > 0) {
-                        String word = wordBuilder.toString();
-                        receivedData.add(word);
-                        System.out.println("Received: " + word);
-                    }
-
-                    client.close();
-                } catch (Exception e) {
-                    System.err.println("Error handling client: " + e.getMessage());
                 }
+            } catch (IOException e) {
+                System.err.println("Failed to start P2 on port " + port + ": " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Server error: " + e.getMessage());
+        }).start();
+
+        // Keep the process running
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            System.err.println("Main thread interrupted");
         }
     }
 }
