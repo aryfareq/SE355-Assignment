@@ -1,3 +1,4 @@
+
 class Message {
     private final String word;
     private final int lamportClock;

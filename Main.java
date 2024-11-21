@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -51,6 +52,12 @@ public class Main {
             String userInput = input.nextLine();
 
             if ("exit".equalsIgnoreCase(userInput)) {
+                serverThread.interrupt();
+                try {
+                    serverThread.join();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 break;
             }
 
@@ -69,7 +76,6 @@ public class Main {
             try {
                 Thread.sleep(15000); // Wait 15 seconds to ensure all words are received
                 
-                // Debug print
                 synchronized(receivedWords) {
                     System.out.println("Total words received: " + receivedWords.size());
                     for (ReceivedWord word : receivedWords) {
@@ -77,17 +83,17 @@ public class Main {
                     }
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
 
             // Ensure sorting and printing happens
             synchronized(receivedWords) {
                 if (!receivedWords.isEmpty()) {
                     // Reorder words using timestamp
-                    Collections.sort(receivedWords, Comparator.comparing(ReceivedWord::getTimestamp));
+                    receivedWords.sort(Comparator.comparing(ReceivedWord::getTimestamp));
 
                     // Print the reconstructed paragraph
-                    System.out.println("\nReconstructed Paragraph: ");
+                    System.out.println("Reconstructed Paragraph: ");
                     for (ReceivedWord receivedWord : receivedWords) {
                         System.out.print(receivedWord.getWord() + " ");
                     }
@@ -96,9 +102,6 @@ public class Main {
                     System.out.println("No words were received!");
                 }
             }
-
-            // Stop the server thread
-            serverThread.interrupt();
         }
 
         input.close();
@@ -116,3 +119,6 @@ public class Main {
         }
     }
 }
+
+
+

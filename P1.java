@@ -1,6 +1,6 @@
+
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.*;
 
 public class P1 {
     private static int lamportClock = 0;
@@ -19,11 +19,6 @@ public class P1 {
                         String[] parts = receivedMessage.split(", ");
                         String word = parts[0].split(": ")[1];
                         int timestamp = Integer.parseInt(parts[1].split(": ")[1]);
-                        
-                        // Reset Lamport clock if new message starts from 1
-                        if (timestamp == 1) {
-                            lamportClock = 0;
-                        }
                         
                         lamportClock = Math.max(lamportClock, timestamp) + 1;
                         
