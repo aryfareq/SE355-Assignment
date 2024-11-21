@@ -3,13 +3,13 @@ import java.io.*;
 import java.net.*;
 
 public class P4 {
-    private static int lamportClock = 0;
     private static final int port = 8004;
     private static final int MAIN_PORT = 9000;
 
     public static void main(String[] args) {
         try {
             ServerSocket server = new ServerSocket(port);
+            int lamportClock = 0;
             while (true) {
                 try (Socket client = server.accept()) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
