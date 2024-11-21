@@ -17,7 +17,7 @@ public class Main {
                 receivedWords.clear();
             }
 
-            // Start a server thread to receive words back from processes
+            // Create and start the server thread
             final ServerSocket[] mainServer = {null};
             Thread serverThread = new Thread(() -> {
                 try {
@@ -44,8 +44,9 @@ public class Main {
                         }
                     }
                 } catch (IOException e) {
-                    System.err.println("Failed to start Main server: " + e.getMessage());
+                    // System.err.println("Failed to start Main server: " + e.getMessage());
                 } finally {
+                    // Proper cleanup of the server socket
                     if (mainServer[0] != null && !mainServer[0].isClosed()) {
                         try {
                             mainServer[0].close();
@@ -63,6 +64,7 @@ public class Main {
             String userInput = input.nextLine();
 
             if ("exit".equalsIgnoreCase(userInput)) {
+                // Gracefully stop the server thread
                 serverThread.interrupt();
                 try {
                     serverThread.join();
@@ -85,7 +87,7 @@ public class Main {
 
             // Wait for responses from processes
             try {
-                Thread.sleep(15000); // Wait 15 seconds to ensure all words are received
+                Thread.sleep(5000); // Wait 15 seconds to ensure all words are received
 
                 synchronized (receivedWords) {
                     System.out.println("Total words received: " + receivedWords.size());

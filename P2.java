@@ -30,6 +30,7 @@ public class P2 {
                             String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
                             mainOut.println(responseToMain);
                             System.out.println("P2 resent to Main: " + responseToMain);
+                            lamportClock = 0;
                         } catch (IOException e) {
                             System.err.println("Error resending to Main: " + e.getMessage());
                         }
