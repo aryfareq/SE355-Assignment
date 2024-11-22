@@ -3,16 +3,21 @@ import java.net.*;
 import java.util.*;
 
 public class Main {
+    //lamport clock in the main file
     private static int lamportClock = 0;
+    //ports array
     private static int[] portArr = {8001, 8002, 8003, 8004, 8005};
+    //the server port for the main file
     private static final int MAIN_PORT = 9000;
+    //list for the recieved words
     private static List<ReceivedWord> receivedWords = new ArrayList<>();
 
     public static void main(String[] args) {
+
         Scanner input = new Scanner(System.in);
 
         while (true) {
-            // Reset received words for each run
+            // Reset received words for each time we re-run the code
             synchronized (receivedWords) {
                 receivedWords.clear();
             }
@@ -31,10 +36,11 @@ public class Main {
                                 String[] parts = receivedMessage.split(", ");
                                 String word = parts[0].split(": ")[1];
                                 int timestamp = Integer.parseInt(parts[1].split(": ")[1]);
+                                lamportClock = Math.max(lamportClock, timestamp) + 1;
 
                                 synchronized (receivedWords) {
                                     receivedWords.add(new ReceivedWord(word, timestamp));
-                                    System.out.println("MAIN RECEIVED: word=" + word + ", timestamp=" + timestamp);
+                                    // System.out.println("MAIN RECEIVED: word=" + word + ", timestamp=" + timestamp);
                                 }
                             }
                         } catch (IOException e) {
@@ -44,7 +50,7 @@ public class Main {
                         }
                     }
                 } catch (IOException e) {
-                    // System.err.println("Failed to start Main server: " + e.getMessage());
+                    
                 } finally {
                     // Proper cleanup of the server socket
                     if (mainServer[0] != null && !mainServer[0].isClosed()) {
@@ -60,19 +66,8 @@ public class Main {
             serverThread.start();
 
             // Get the user text
-            System.out.println("Input the text you want to send (or 'exit' to quit): ");
+            System.out.println("Input the text you want to send: ");
             String userInput = input.nextLine();
-
-            if ("exit".equalsIgnoreCase(userInput)) {
-                // Gracefully stop the server thread
-                serverThread.interrupt();
-                try {
-                    serverThread.join();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                break;
-            }
 
             // Split user input into words
             String[] words = userInput.split(" ");
@@ -84,7 +79,7 @@ public class Main {
                 int targetPort = portArr[targetProcess];
                 sendWord(word, targetPort);
             }
-
+            
             // Wait for responses from processes
             try {
                 Thread.sleep(5000); // Wait 15 seconds to ensure all words are received
@@ -116,13 +111,12 @@ public class Main {
                 }
             }
         }
-
-        input.close();
     }
-
+    
     private static void sendWord(String word, int port) {
-        lamportClock++;
         try (Socket client = new Socket("localhost", port)) {
+            //increment the clock when a message is sent from main
+            lamportClock++;
             PrintWriter out = new PrintWriter(client.getOutputStream(), true);
             String message = "Word: " + word + ", Timestamp: " + lamportClock;
             out.println(message);

@@ -26,11 +26,11 @@ public class P5 {
                         
                         // Resend to Main with updated timestamp
                         try (Socket mainSocket = new Socket("localhost", MAIN_PORT)) {
+                            // lamportClock++;
                             PrintWriter mainOut = new PrintWriter(mainSocket.getOutputStream(), true);
                             String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
                             mainOut.println(responseToMain);
                             System.out.println("P5 resent to Main: " + responseToMain);
-                            lamportClock = 0;
                         } catch (IOException e) {
                             System.err.println("Error resending to Main: " + e.getMessage());
                         }

@@ -5,11 +5,11 @@ import java.net.*;
 public class P1 {
     private static final int port = 8001;
     private static final int MAIN_PORT = 9000;
-
+    
     public static void main(String[] args) {
         try {
-            ServerSocket server = new ServerSocket(port);
             int lamportClock = 0;
+            ServerSocket server = new ServerSocket(port);
             while (true) {
                 try (Socket client = server.accept()) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -26,11 +26,11 @@ public class P1 {
                         
                         // Resend to Main with updated timestamp
                         try (Socket mainSocket = new Socket("localhost", MAIN_PORT)) {
+                            // lamportClock++;
                             PrintWriter mainOut = new PrintWriter(mainSocket.getOutputStream(), true);
                             String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
                             mainOut.println(responseToMain);
                             System.out.println("P1 resent to Main: " + responseToMain);
-                            lamportClock = 0;
                         } catch (IOException e) {
                             System.err.println("Error resending to Main: " + e.getMessage());
                         }
