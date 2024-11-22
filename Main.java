@@ -34,13 +34,15 @@ public class Main {
 
                             if (receivedMessage != null) {
                                 String[] parts = receivedMessage.split(", ");
+                                //get the word
                                 String word = parts[0].split(": ")[1];
+                                //get the timestamp
                                 int timestamp = Integer.parseInt(parts[1].split(": ")[1]);
+                                //update the clock
                                 lamportClock = Math.max(lamportClock, timestamp) + 1;
 
                                 synchronized (receivedWords) {
                                     receivedWords.add(new ReceivedWord(word, timestamp));
-                                    // System.out.println("MAIN RECEIVED: word=" + word + ", timestamp=" + timestamp);
                                 }
                             }
                         } catch (IOException e) {
@@ -82,7 +84,7 @@ public class Main {
             
             // Wait for responses from processes
             try {
-                Thread.sleep(5000); // Wait 15 seconds to ensure all words are received
+                Thread.sleep(1000); // Wait 15 seconds to ensure all words are received
 
                 synchronized (receivedWords) {
                     System.out.println("Total words received: " + receivedWords.size());
@@ -105,7 +107,7 @@ public class Main {
                     for (ReceivedWord receivedWord : receivedWords) {
                         System.out.print(receivedWord.getWord() + " ");
                     }
-                    System.out.println(); // New line after paragraph
+                    System.out.println();
                 } else {
                     System.out.println("No words were received!");
                 }

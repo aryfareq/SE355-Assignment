@@ -26,7 +26,6 @@ public class P4 {
                         
                         // Resend to Main with updated timestamp
                         try (Socket mainSocket = new Socket("localhost", MAIN_PORT)) {
-                            // lamportClock++;
                             PrintWriter mainOut = new PrintWriter(mainSocket.getOutputStream(), true);
                             String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
                             mainOut.println(responseToMain);

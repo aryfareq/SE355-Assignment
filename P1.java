@@ -8,8 +8,8 @@ public class P1 {
     
     public static void main(String[] args) {
         try {
-            int lamportClock = 0;
             ServerSocket server = new ServerSocket(port);
+            int lamportClock = 0;
             while (true) {
                 try (Socket client = server.accept()) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -26,7 +26,6 @@ public class P1 {
                         
                         // Resend to Main with updated timestamp
                         try (Socket mainSocket = new Socket("localhost", MAIN_PORT)) {
-                            // lamportClock++;
                             PrintWriter mainOut = new PrintWriter(mainSocket.getOutputStream(), true);
                             String responseToMain = "Word: " + word + ", Timestamp: " + lamportClock;
                             mainOut.println(responseToMain);
